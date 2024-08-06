@@ -1,0 +1,23 @@
+{
+	"issues": [
+      {
+			"key": "IssueId-726741",
+			"fields": {
+				"summary": "NM healthcheck fails after NM restore - DMP paths check",
+				"Issue Description": "NM healthcheck fails after NM restore",
+				"Impact": "NM Health check failed with DMP paths missing error.",
+				"Resolution Details": "Back up & restore documentation is updated with the following details - in case NM Health check fails with  DMP Paths Check Error check and register the initiators manually and reboot the node."
+				}
+      },
+      {
+      "key": "IssueId-709372",
+      "fields": {
+          "summary": "Document Observation on section 17 of the Firmware Upgrade Automation Guide for NM Deployment while performing 439 Firmware Upgrade",
+          "Issue Description": "1. We have encountered a document observation in the Firmware Upgrade Automation Guide for NM Deployment while performing Firmware Upgrade under the section 17 Cleanup Task\n\nSo the cleanup script is failing",
+          "Impact": "Clean up of the deployment will be failed",
+          "Resolution Details": "Firmware automation guide is updated by adding the username field in the example of the Clean up command."
+      }
+    }
+		]
+	
+}
