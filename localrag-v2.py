@@ -3,6 +3,7 @@ import ollama
 import os
 from openai import OpenAI
 import argparse
+import re
 import json
 
 # ANSI escape codes for colors
