@@ -66,7 +66,7 @@ def rewrite_query(user_input_json, conversation_history, ollama_model):
 def ollama_chat(user_input, system_message, vault_embeddings, vault_content, ollama_model, conversation_history):
     conversation_history.append({"role": "user", "content": user_input})
     
-    if len(conversation_history) > 1:
+    """if len(conversation_history) > 1:
         query_json = {
             "Query": user_input,
             "Rewritten Query": ""
@@ -79,7 +79,9 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
     else:
         rewritten_query = user_input
     
-    relevant_context = get_relevant_context(rewritten_query, vault_embeddings, vault_content)
+    relevant_context = get_relevant_context(rewritten_query, vault_embeddings, vault_content)"""
+
+    relevant_context = get_relevant_context(user_input, vault_embeddings, vault_content)
     if relevant_context:
         context_str = "\n".join(relevant_context)
         print("Context Pulled from Documents: \n\n" + CYAN + context_str + RESET_COLOR)
@@ -147,7 +149,7 @@ def upload_jsonfile():
 # Parse command-line arguments
 print(NEON_GREEN + "Parsing command-line arguments..." + RESET_COLOR)
 parser = argparse.ArgumentParser(description="Ollama Chat")
-parser.add_argument("--model", default="llama3", help="Ollama model to use (default: llama3)")
+parser.add_argument("--model", default="llama3.1", help="Ollama model to use (default: llama3)")
 args = parser.parse_args()
 
 # Configuration for the Ollama API client
