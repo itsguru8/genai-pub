@@ -1,0 +1,25 @@
+{
+	"family": [
+      {
+			"role": "father",
+			"name": "Guru",
+			"age": "45"
+      },
+      {
+			"role": "mother",
+			"name": "Gaya",
+			"age": "40"
+      },
+      {
+			"role": "child",
+			"name": "Anish",
+			"age": "11"
+      },
+      {
+			"role": "child",
+			"name": "Sumi",
+			"age": "5"
+      }
+	]
+	
+}
