@@ -85,7 +85,7 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
     relevant_context = get_relevant_context(user_input, vault_embeddings, vault_content)
     if relevant_context:
         context_str = "\n".join(relevant_context)
-        print("Context Pulled from Documents: \n\n" + CYAN + context_str + RESET_COLOR)
+        #print("Context Pulled from Documents: \n\n" + CYAN + context_str + RESET_COLOR)
     else:
         print(CYAN + "No relevant context found." + RESET_COLOR)
     
@@ -184,15 +184,25 @@ vault_embeddings_tensor = torch.tensor(vault_embeddings)
 print("Embeddings for each line in the vault:")
 print(vault_embeddings_tensor)
 
+issueCategoryList = [ "Backup & Restore", "Documentation","Unknown","Not a bug","Code fault"]
+
 # Conversation loop
 print("Starting conversation loop...")
 conversation_history = []
 system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
 
 while True:
-    user_input = input(YELLOW + "Ask a query about your documents (or type 'quit' to exit): " + RESET_COLOR)
+
+    user_input = input(YELLOW + "Ask a question OR Enter 1. for Issueid (or type 'quit' to exit): " + RESET_COLOR)
     if user_input.lower() == 'quit':
         break
-    
-    response = ollama_chat(user_input, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
-    print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
+
+    # Issue
+    if user_input.lower() == '1':
+        user_input = input(YELLOW + "Enter Issueid : " + RESET_COLOR)
+        prompt = "Analyze Issueid-" + user_input + "and suggest a suitable issue category among the list" + issueCategoryList
+        response = ollama_chat(prompt, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
+        print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
+    else:    
+        response = ollama_chat(user_input, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
+        print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
