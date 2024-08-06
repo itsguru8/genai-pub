@@ -200,7 +200,7 @@ while True:
     # Issue
     if user_input.lower() == '1':
         user_input = input(YELLOW + "Enter Issueid : " + RESET_COLOR)
-        prompt = "Analyze Issueid-" + user_input + "and suggest a suitable issue category among the list" + issueCategoryList
+        prompt = "Analyze Issueid-" + user_input + "and suggest a suitable issue category among the list" + ",".join(issueCategoryList)
         response = ollama_chat(prompt, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
         print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
     else:    
