@@ -1,0 +1,79 @@
+{
+    "total Issues": 2,
+    "issues": [
+        {
+            "key": "IssueId-726741",
+            "fields": {
+                "resolution": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/resolution/10100",
+                    "id": "10100",
+                    "description": "A fix for this issue is checked into the tree and tested.",
+                    "name": "Fixed"
+                },
+                "Slippage Corrective Actions": "As the root cause of the fault could be a network glitch, which cannot be caught / simulated in the design phase, following improvement is taken to log a warning message if less than expected ports are identified : IssueId-726767.This would avoid the problem and indicate any issue in advance.",
+                "customfield_48912": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/505183",
+                    "value": "Restore Tests",
+                    "id": "505183",
+                    "disabled": false
+                },
+                "Reason for Slippage": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/507022",
+                    "value": "Intermittent fault/Timing issue",
+                    "id": "507022",
+                    "disabled": false
+                },
+                "Consequence": "ENM Health Check will be failed.",
+                "Test Phase": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/513207",
+                    "value": "Customer",
+                    "id": "513207",
+                    "disabled": false
+                },
+                "Resolution Details": "ENM BUR SAG is updated with the following details in case ENM Health check fails with  DMP Paths Check Error.\r\nIn section 12.4.30 : ENM Health Check Fails with DMP Paths Error ,To check which initiators were not registered , and register the initiators manually and reboot the node.",
+                "Issue Description": "1 EFFECT\n1.1 Trouble summary\nENM healthcheck fails after ENM restore - DMP paths check\n2 DESCRIPTION\n2.1. Detailed trouble description\nENM restore activity  executed on wtc2e1 lab deployment\nAfter completion , the ENM health check failed\n\nBeginning of DMP paths checkERROR: non-DB node wtc2e1c1s14 has 3 enabled paths (4 expected), [sdb, sdf, sdi], on disk 3600601604d3040001c3ec9c51afdee11 and controller 0\nERROR: non-DB node wtc2e1c1s14 has 3 enabled paths (4 expected), [sdc, sdg, sdj], on disk 3600601604d3040005b86a0dd1afdee11 and controller 0\nERROR: non-DB node wtc2e1c1s14 has 3 enabled paths (4 expected), [sde, sdh, sda], on disk 3600601604d3040006a482ed21afdee11 and controller 0\nHealthcheck status: FAILED.\nVNX has one initiator not registered.\nCustomer is considering the ENM restre activity failed as there workaround suggested by design is not documented\nLogs and analysis available in https://eteamproject.internal.ericsson.com/browse/IssueId-725709\n\n3 MEASURES\n3.1. Workaround and Recovery\nre registering the path and reboot peer node involved",
+                "Issue Category": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/512987",
+                    "value": "BUR",
+                    "id": "512987",
+                    "disabled": false
+                },
+                "summary": "ENM healthcheck fails after ENM restore - DMP paths check",
+        },
+        {
+            "key": "IssueId-709372",
+            "fields": {
+                "resolution": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/resolution/10100",
+                    "id": "10100",
+                    "description": "A fix for this issue is checked into the tree and tested.",
+                    "name": "Fixed"
+                },
+                "Impact": "Clean up of the deployment will be failed if the example command is copy pasted instead of the original command given above which is written properly, due to which FAT tool will not be uninstalled and fwuser will not be erased.",
+                "Slippage Corrective Actions": "Once we receive the preliminary document from CPI owners we need to verify all the existing changes were present or not in the FAT Guide & Compare the current PDF Version with the previous approved version\r\nRCA has been presented as well for this TR.",
+                "Reason for Slippage": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/507494",
+                    "value": "Missed in Document Review",
+                    "id": "507494",
+                    "disabled": false
+                },
+                "Consequence": "Cleanup will be failed post FW Upgrade",
+                "Test Phase": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/513220",
+                    "value": "Sprint Release",
+                    "id": "513220",
+                    "disabled": false
+                },
+                "Resolution Details": "Firmware automation guide got updated by adding the username field in the example of the Clean up command.",
+                "Issue Description": "******************************************************************************\nCommunication in advance with receiving Team is recommended. More Information - +[TR/Bug Handling Guidelines|https://confluence-oss.seli.wh.rnd.internal.ericsson.com/display/ENMJIRA/ENM+JIRA+Bug+and+JIRA+TR+Handling+Guidelines]+\n******************************************************************************\n\nPlease adhere to the - +[Data Collection Guidelines|https://erilink.internal.ericsson.com/eridoc/erl/objectId/09004cff89533d7d?docno=1%2F03161-AOM901151Uen&action=current&format=pdf]+ for the product that you are writing this bug/TR against\n\n******************************************************************************\n\n*{color:#d04437}1. Detailed problem description:{color}*\n---------------------------------------------------------- \nWe have encountered a document observation in the Firmware Upgrade Automation Guide for ENM Deployment  while performing Firmware Upgrade under the section 17  Cleanup Task\n\nSo the cleanup script for Using pre-existing sudo user \n{code:java}\nsudo /opt/ericsson/firmwareupgradetool/firmware_upgrade.py cleanu →\np --component=ALL --sedfile=/var/tmp/depl_sed.txt {code}\n \n\nWhen we tried cleaning up with above command, the script is failing with below error\n{code:java}\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Entered make_dirs with /opt/ericsson/fi\nrmwareupgradetool/report/gen10blade\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Created /opt/ericsson/firmwareupgradeto\nol/report/gen10blade\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Entered make_dirs with /opt/ericsson/fi\nrmwareupgradetool/report/oa\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Created /opt/ericsson/firmwareupgradeto\nol/report/oa\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Entered make_dirs with /opt/ericsson/fi\nrmwareupgradetool/report/vc\nFeb 05 15:56:45 DEBUG   cleanup             : make_dirs                : Created /opt/ericsson/firmwareupgradeto\nol/report/vc\nFeb 05 15:56:45 DEBUG   cleanup             : clean_sum_files_peer     : Entered clean_sum_files_peer\nFeb 05 15:56:45 INFO    cleanup             : clean_sum_files_peer     : Cleaning SUM files on ieatrcxb6471\nFeb 05 15:56:45 DEBUG   sshconn             : remote_cmd               : Running sudo rm -rf /var/tmp/sum /tmp/s\num /var/log/sum on 10.247.246.6 as fwuser\nFeb 05 15:56:45 DEBUG   sshconn             : connect_to_host          : Connecting to 10.247.246.6 as fwuser\nFeb 05 15:56:47 ERROR   sshconn             : connect_to_host          : Failed to connect to 10.247.246.6\nTraceback (most recent call last):\n  File \"/opt/ericsson/firmwareupgradetool/lib/sshconn.py\", line 31, in connect_to_host\n    ssh.connect(host, username=user, password=password, port=22, timeout=30)\n  File \"/usr/lib/python2.7/site-packages/paramiko/client.py\", line 380, in connect\n    look_for_keys, gss_auth, gss_kex, gss_deleg_creds, gss_host)\n  File \"/usr/lib/python2.7/site-packages/paramiko/client.py\", line 621, in _auth\n    raise saved_exception\nAuthenticationException: Authentication failed.\nFeb 05 15:56:47 ERROR   firmware_upgrade    : <module>                 : run_cleanup failed: Authentication fail\ned.\n {code}\nWhen you compare it with example in section 17 the command consists username \n{code:java}\n/opt/ericsson/firmwareupgradetool/firmware_upgrade.py cleanup --c →\nomponent=ALL --sedfile= --username={code}\nSo the expectation for the script to be successful is that the  pre-existing sudo user command must contain username in the script\n\n \n\n*{color:#d04437}2. Expected behaviour or results:{color}*\n---------------------------------------------------------- \nThe  pre-existing sudo user command must contain username in the script\n\n*{color:#d04437}3. Activity and/or conditions during which this bug was found:{color}*\n----------------------------------------------------------\nFirmware Upgrade\n\n*{color:#d04437}4. Tester impact :{color}*\n---------------------------------------------------------- \nThe cleanup task will fail\n\n*{color:#d04437}5. Potential Customer and/or System impact :{color}* \n---------------------------------------------------------- \nThe cleanup task will fail\n\n*{color:#d04437}6. Frequency of Fault{color}*\n----------------------------------------------------------\nOnce\n\n*{color:#d04437}7. Troubleshooting completed:{color}*\n----------------------------------------------------------\nChecked the document, Verified and compared it with example command to verify the difference and also checked firmware upgrade log and attached\n\n*{color:#d04437}8. Documentation:{color}*\n----------------------------------------------------------\nFirmware Upgrade Automation Guide for ENM Deployment",
+                "Issue Category": {
+                    "self": "https://eteamproject.internal.ericsson.com/rest/api/2/customFieldOption/511557",
+                    "value": "Documentation",
+                    "id": "511557",
+                    "disabled": false
+                },
+                "summary": "SR : 24.03 Document Observation on section 17 of the Firmware Upgrade Automation Guide for ENM Deployment while performing 439 Firmware Upgrade",
+                "Preventive Actions": "Changes directive in the Confluence should be clear and Un ambiguous to the CPI Owner to make the changes accurately and once we receive the Prelim document from CPI it should be compared with the previous approved baseline Document.\r\nReadiness checklist is updated to get confirmation from Grifone that the cleanroom of document is done with the exact steps mentioned. Will update this starting from 24.3 FW HB.\r\n",
+        }
+   ]
+}
