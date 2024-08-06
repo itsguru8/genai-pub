@@ -86,6 +86,7 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
     if relevant_context:
         context_str = "\n".join(relevant_context)
         #print("Context Pulled from Documents: \n\n" + CYAN + context_str + RESET_COLOR)
+        print("Context is Pulled from Documents: now Analyzing .. \n\n" + CYAN + RESET_COLOR)
     else:
         print(CYAN + "No relevant context found." + RESET_COLOR)
     
@@ -189,7 +190,8 @@ issueCategoryList = [ "Backup & Restore", "Documentation","Unknown","Not a bug",
 # Conversation loop
 print("Starting conversation loop...")
 conversation_history = []
-system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
+#system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
+system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text."
 
 while True:
 
