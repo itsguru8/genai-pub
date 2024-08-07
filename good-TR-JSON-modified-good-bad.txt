@@ -1,0 +1,36 @@
+{
+	"issues": [
+      {
+			"key": "IssueId-726741",
+			"fields": {
+				"summary": "NM healthcheck fails after NM restore - DMP paths check",
+				"Issue Description": "NM healthcheck fails after NM restore",
+				"Impact": "NM Health check failed with DMP paths missing error.",
+				"Resolution Details": "Back up & restore documentation is updated with the following details - in case NM Health check fails with  DMP Paths Check Error check and register the initiators manually and reboot the node."
+				}
+      },
+      {
+      "key": "IssueId-709372",
+      "fields": {
+          "summary": "Document Observation on section 17 of the Firmware Upgrade Automation Guide for NM Deployment while performing 439 Firmware Upgrade",
+          "Issue Description": "1. We have encountered a document observation in the Firmware Upgrade Automation Guide for NM Deployment while performing Firmware Upgrade under the section 17 Cleanup Task\n\nSo the cleanup script is failing",
+          "Impact": "Clean up of the deployment will be failed",
+          "Resolution Details": "Firmware automation guide is updated by adding the username field in the example of the Clean up command."
+      }
+    },
+      {
+      "key": "IssueId-232916",
+      "fields": {
+          "summary": "Backup of VTFnode fails in AI",
+          "Issue Description": "During auto integration (LMT integration) the system tries to take a backup on the node.
+In the log :
+Create Backup Failed 2017-11-22 12:13:57.003 Exception occured while Creating Backup: Failure reason: Backup Mo with Backup Name VtfRadioNode release upgrade package_22112017_121124_INTEGRATION_COMPLETE is not found. backupName : VtfRadioNode release upgrade package_22112017_121124_INTEGRATION_COMPLETE
+I suspect that the name of the backup could be the problem. Name contains spaces which the node can handle but when using SHM to create a backup it is not possible.",
+          "Impact": "Though backup is created on node, exported the same to ENM(SMRS) could not be possible",
+          "Resolution Details": "ITTE team has agreed to re-install the system as current one is unstable."
+      }
+    }
+	
+		]
+	
+}
