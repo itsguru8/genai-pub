@@ -1,0 +1,18 @@
+{
+    "phases": [
+        {"Early phase" : "1"},
+        {"Design" : "2"},
+        {"MTV" : "3"},
+        {"NIV" : "4"},
+        {"FOA" : "5"},
+        {"Customer" : "6"}
+    ],
+    "test_types_in_phase" : {
+        "Design" :  ["Unit Testing", "Functional Testing", "TAF Testing","Non Functional Testing","Real Node Testing"] ,
+        "MTV" : ["MT Testing"]
+    },
+    "reason_for_slippage_by_phase" : [
+        {"Early phase" : ["Missed in Document Review"]},
+        {"Design" :  ["Environment", "Insufficient Test coverage", "Intermittent fault","Missed Impact","Missed in Code review", "Missed in Design Analysis"] }
+    ]
+}
