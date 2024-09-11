@@ -66,16 +66,29 @@ if file_path:
               if i['fields']['customfield_48913'] :
                 if i['fields']['customfield_48913']['value'] :
                   i['fields']['customfield_48913']['value'] = compileObj.sub('', i['fields']['customfield_48913']['value'])
+              line = erc_file.readline()
             #while-end E// terms removed
 
-          content['summary'] = i['fields']['summary']
-          content['Issue Description'] = i['fields']['customfield_25119']
-          content['Impact'] = i['fields']['customfield_30068']
-          content['Resolution Details'] = i['fields']['customfield_39227']
-          content['Test Phase(found)'] = i['fields']['customfield_19973']['value']
-          content['Should have been found in (phase)'] = i['fields']['customfield_48911']['value']
-          content['Should have been found in (type)'] = i['fields']['customfield_48912']['value']
-          content['Reason for slippage'] = i['fields']['customfield_48913']['value']
+          if i['fields']['summary']:
+            content['summary'] = i['fields']['summary']
+          if i['fields']['customfield_25119']:
+            content['Issue Description'] = i['fields']['customfield_25119']
+          if i['fields']['customfield_30068']:
+            content['Impact'] = i['fields']['customfield_30068']
+          if i['fields']['customfield_39227']:
+            content['Resolution Details'] = i['fields']['customfield_39227']
+          if i['fields']['customfield_19973']:
+            if i['fields']['customfield_19973']['value']:
+              content['Test Phase(found)'] = i['fields']['customfield_19973']['value']
+          if i['fields']['customfield_48911']:
+            if i['fields']['customfield_48911']['value']:
+              content['Should have been found in (phase)'] = i['fields']['customfield_48911']['value']
+          if i['fields']['customfield_48912']:
+            if i['fields']['customfield_48912']['value']:
+              content['Should have been found in (type)'] = i['fields']['customfield_48912']['value']
+          if i['fields']['customfield_48913']:
+            if i['fields']['customfield_48913']['value']:
+              content['Reason for slippage'] = i['fields']['customfield_48913']['value']
 
           outjson['Issue-Id'] = i['key']
           outjson['fields'] = content
