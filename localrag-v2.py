@@ -5,6 +5,7 @@ from openai import OpenAI
 import argparse
 import re
 import json
+from time import perf_counter
 
 # ANSI escape codes for colors
 PINK = '\033[95m'
@@ -34,54 +35,10 @@ def get_relevant_context(rewritten_input, vault_embeddings, vault_content, top_k
     relevant_context = [vault_content[idx].strip() for idx in top_indices]
     return relevant_context
 
-def rewrite_query(user_input_json, conversation_history, ollama_model):
-    user_input = json.loads(user_input_json)["Query"]
-    context = "\n".join([f"{msg['role']}: {msg['content']}" for msg in conversation_history[-2:]])
-    prompt = f"""Rewrite the following query by incorporating relevant context from the conversation history.
-    The rewritten query should:
-    
-    - Preserve the core intent and meaning of the original query
-    - Expand and clarify the query to make it more specific and informative for retrieving relevant context
-    - Avoid introducing new topics or queries that deviate from the original query
-    - DONT EVER ANSWER the Original query, but instead focus on rephrasing and expanding it into a new query
-    
-    Return ONLY the rewritten query text, without any additional formatting or explanations.
-    
-    Conversation History:
-    {context}
-    
-    Original query: [{user_input}]
-    
-    Rewritten query: 
-    """
-    response = client.chat.completions.create(
-        model=ollama_model,
-        messages=[{"role": "system", "content": prompt}],
-        max_tokens=200,
-        n=1,
-        temperature=0.1,
-    )
-    rewritten_query = response.choices[0].message.content.strip()
-    return json.dumps({"Rewritten Query": rewritten_query})
    
 def ollama_chat(user_input, system_message, vault_embeddings, vault_content, ollama_model, conversation_history):
     conversation_history.append({"role": "user", "content": user_input})
     
-    """if len(conversation_history) > 1:
-        query_json = {
-            "Query": user_input,
-            "Rewritten Query": ""
-        }
-        rewritten_query_json = rewrite_query(json.dumps(query_json), conversation_history, ollama_model)
-        rewritten_query_data = json.loads(rewritten_query_json)
-        rewritten_query = rewritten_query_data["Rewritten Query"]
-        print(PINK + "Original Query: " + user_input + RESET_COLOR)
-        print(PINK + "Rewritten Query: " + rewritten_query + RESET_COLOR)
-    else:
-        rewritten_query = user_input
-    
-    relevant_context = get_relevant_context(rewritten_query, vault_embeddings, vault_content)"""
-
     relevant_context = get_relevant_context(user_input, vault_embeddings, vault_content)
     if relevant_context:
         context_str = "\n".join(relevant_context)
@@ -100,12 +57,18 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
         {"role": "system", "content": system_message},
         *conversation_history
     ]
+
+    #measure
+    t0 = perf_counter()
     
     response = client.chat.completions.create(
         model=ollama_model,
         messages=messages,
         max_tokens=2000,
     )
+    t1 = perf_counter()
+    time_taken = t1 - t0
+    print("time taken(secs) = ",int(time_taken))
     
     conversation_history.append({"role": "assistant", "content": response.choices[0].message.content})
     
@@ -113,8 +76,7 @@ def ollama_chat(user_input, system_message, vault_embeddings, vault_content, oll
 
 
 # Function to upload a JSON file and append to vault.txt
-def upload_jsonfile():
-    file_path = "good-TR-JSON-modified-2.txt"
+def upload_jsonfile(file_path):
     if file_path:
         with open(file_path, 'r', encoding="utf-8") as json_file:
             data = json.load(json_file)
@@ -143,7 +105,7 @@ def upload_jsonfile():
                 for chunk in chunks:
                     # Write each chunk to its own line
                     vault_file.write(chunk.strip() + "\n")  # Two newlines to separate chunks
-            print(f"JSON file content appended to vault.txt with each chunk on a separate line.")
+            #print(f"JSON file content appended to vault.txt with each chunk on a separate line.")
 
 
 
@@ -161,11 +123,12 @@ client = OpenAI(
     api_key='llama3'
 )
 
+#read TR json
+upload_jsonfile("development-process.json")
+upload_jsonfile("input_for_localAI.json")
+##
 
-#read json
-upload_jsonfile()
-
-# Load the vault content
+# Load the vault content with Process & TR info !
 print(NEON_GREEN + "Loading vault content..." + RESET_COLOR)
 vault_content = []
 if os.path.exists("vault.txt"):
@@ -185,13 +148,16 @@ vault_embeddings_tensor = torch.tensor(vault_embeddings)
 print("Embeddings for each line in the vault:")
 print(vault_embeddings_tensor)
 
-issueCategoryList = [ "Backup & Restore", "Documentation","Unknown","Not a bug","Code fault"]
-
 # Conversation loop
 print("Starting conversation loop...")
 conversation_history = []
-#system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Also bring in extra relevant infromation to the user query from outside the given context."
-system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text."
+
+system_message_default = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. If you dont know the answer, please say so. Be clear and concise."
+
+system_message = "You are a helpful assistant that is an expert at extracting the most useful information from a given text. Your embeddings contain [1] JSON Object development-process which contains details on different phases of a software development process. [2] JSON Object 'Issues' which contains details of different software issues reported in the past on the software developed using the development process mentioned in [1]. Each Issue is uniquely identified by a Issue-Id. Save fields about each Issue id separately and when the user asks about an Issue id, retrieve fields specific to the Issue-Id. Refer to the above general instructions to answer the user questions. Be clear and concise. If you dont know the answer, please say so. Make no assumptions."
+
+rfs_instructions = ". If not found, please say so and stop the analysis. [2] If found, derive the existing values for the following fields [a] 'Test Phase(found)'  ( lets call it 'TP') [b] 'should have been found in (phase)' ( lets call it 'SHBF(P)') [c] 'should have been found in (type)' ( lets call it 'SHBF(T)')  [d] reason for slippage ( lets call it 'RFS'). [3] Now comes the validation part to see if existing values of Issue-Id that are read from JSON Object Issues are consistent. For this Issue-Id, [3.1] first, derive sequence values for fields SHBF(P) and TP and print them. If sequence value of SHBF(P) is less than or equal to sequence value of TP, then proceed to Step[3.2]. Else flag SHBF(P) as inconsistent and proceed further [3.2] If value of SHBF(T) field exactly matches any of the test types listed for that SHBF(P), then proceed to Step[3.3]. Else flag the existing value as inconsistent and suggest suitable value among test types for that SHBF(P) and proceed further. [3.3] If value of RFS exactly matches any of the reason for slippage listed for that SHBF(P), then proceed to next step. Else flag the existing value as inconsistent and suggest a suitable value among reason for slippage values for that SHBF(P) and proceed further. Summarize if any inconsistency is found in any of the above steps. "
+
 
 while True:
 
@@ -199,12 +165,21 @@ while True:
     if user_input.lower() == 'quit':
         break
 
-    # Issue
+    # Issue-mode
     if user_input.lower() == '1':
-        user_input = input(YELLOW + "Enter Issueid : " + RESET_COLOR)
-        prompt = "Analyze Issueid-" + user_input + "and suggest a suitable issue category among the list" + ",".join(issueCategoryList)
-        response = ollama_chat(prompt, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
+        print("Retrieving issues for which info is available .. \n\n" + CYAN + RESET_COLOR)
+        response = ollama_chat("list the issue ids you see in JSON Object Issues ", system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)        
         print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
+
+        while True: 
+            user_input = input(YELLOW + "Enter the Issueid to analyze: " + RESET_COLOR)
+            if user_input.lower() == 'quit':
+                break
+            userrfsprompt = "Analyze the issue Id as below  [1]Fetch fields specific to the Issue-Id " + user_input + rfs_instructions         
+        
+            response = ollama_chat(userrfsprompt, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
+            print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)
     else:    
+        #general question
         response = ollama_chat(user_input, system_message, vault_embeddings_tensor, vault_content, args.model, conversation_history)
         print(NEON_GREEN + "Response: \n\n" + response + RESET_COLOR)

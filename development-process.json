@@ -1,0 +1,48 @@
+{
+    "development_process" : 
+    {
+        "phases": 
+	[
+            { "Early phase" : 
+            { "sequence" : "1",
+	    "test_types" :  ["PoC","Spike"],
+            "reason_for_slippage" : ["Missed in Document Review"]
+	    }
+	    },
+
+            {"Design" : 
+            { "sequence" : "2",
+            "test_types" :  ["Unit Testing", "Functional Tests", "TAF Testing","Non Functional Testing","Real Node Testing"],
+            "reason_for_slippage" : ["Environment", "Insufficient Test coverage", "Intermittent fault","Missed Impact","Missed in Code review", "Missed in Design Analysis"] 
+	    }
+	    },
+
+            {"Main Track Verification" : 
+            { "sequence" : "3",
+            "test_types" :  ["Main Track Testing"],
+            "reason_for_slippage" : ["Insufficent tests"]
+	    }
+	    },
+
+            {"Network Integration Verification(NIV)" : 
+            { "sequence" : "4",
+            "test_types" :  ["Acceptance testing"] 
+	    }
+	    },
+
+            {"First Office Application(FOA)" :
+            { "sequence" : "5",
+            "test_types" :  ["None"] ,
+            "reason_for_slippage" : ["Not applicable"]
+	    }
+	    },
+
+            {"Customer" :
+            { "sequence" : "6",
+            "reason_for_slippage" : ["Not applicable"]
+	    }
+	    }
+	    
+        ]
+    }
+}

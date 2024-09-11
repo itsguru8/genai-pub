@@ -1,0 +1,4 @@
+#!/bin/bash
+clear
+rm vault.txt
+python localrag-v2.py
