@@ -1,0 +1,9 @@
+{
+	"AI_input_fields": [
+	"key",
+	"summary",
+	"Issue Description",
+	"Impact",
+	"Resolution Details"
+	]
+}

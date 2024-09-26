@@ -1,0 +1,10 @@
+{
+	"AI_input_fields": [
+	"key": "key",
+	"summary":"['fields']['summary']",
+	"Issue Description" : "['fields']['customfield_25119']",
+	"Impact": "['fields']['customfield_30068']",
+	"Resolution Details" : "['fields']['customfield_39227']"
+	]
+}
+
