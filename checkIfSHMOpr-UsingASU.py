@@ -1,3 +1,4 @@
+import sys
 import os
 import re
 import json
@@ -10,22 +11,32 @@ from datetime import datetime
 ## Input:
 ## 1.  ASU usage file txt
 ## 2. SHM usage file 
-## 3. ma-operator mapping file
+if (len(sys.argv) == 1) :
+    print("USAGE: <asu_raw_stats_file> <shm_raw_stats_file>")
+    exit()
+
+print("INPUT: asu_raw_stats_file: ",sys.argv[1])
+print("INPUT: shm_raw_stats_file: ",sys.argv[2])
+
+
+## Operator config file:
+## ma-operator mapping file
 ## 
+# internal file for stats
+opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operator-mapping.json"
+
 
 #SHMOpr_file = "SHM-Opr_Wk1-Wk33.txt"
 #ASU_file= "ASU_STATS_2024_WK1-WK33.csv"
-ASU_file= "ASU_STATS_2022_WK1-WK52.csv"
-"""
-CHECK:
-column 5: operator
-
-"""
-
+#ASU_file= "ASU_STATS_2022_WK1-WK52.csv"
+ASU_file = sys.argv[1]
 
 #SHM_raw_stats_file = "SHM_STATS_UPGRADE2024_WK1-WK33.csv"
-SHM_raw_stats_file = "SHM_STATS_2022_WK1-WK52.csv"
-"""
+#SHM_raw_stats_file = "SHM_STATS_2022_WK1-WK52.csv"
+SHM_raw_stats_file = sys.argv[2]
+
+
+""" SAME for both asu & shm raw stats 
 CHECK:
 column 3: Market Area
 column 5: Operator
@@ -34,8 +45,6 @@ column 7: Node count
 
 """
 
-# internal file for stats
-opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operator-mapping.json"
 
 #vars
 asu_opr_list = {}
@@ -54,7 +63,7 @@ datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
 #Output
 #print out
 outcontent={}
-outFilePath="SHM-Opr-not-using-ASU_"+ASU_file+".json"
+outFilePath="SHM-Opr-not-using-ASU.json"
 Out_pdffile = "SHM-only-Usage"
 
 # [2] method to know if a given SHM opr using ASU ?
@@ -80,7 +89,7 @@ def dump_ma_stats(l_ma,x_label,y_label) :
     for k in empty_keys:
         del shm_only_all_stats[l_ma][k]
     sorted_ma_stats = dict(sorted(shm_only_all_stats[l_ma].items(), key=lambda item:item[1], reverse=True)) 
-    print (sorted_ma_stats)   
+    #print (sorted_ma_stats)   
     shm_only_all_stats[l_ma] = sorted_ma_stats
     
     if len(sorted_ma_stats):
@@ -114,6 +123,7 @@ def save_image(pdffile):
 # read-config obj 
 with open(opr_mapping_file_path, 'r', encoding="utf-8") as json_file:
     shm_only_all_stats = json.load(json_file)
+print("READ: config file: ", opr_mapping_file_path)
 
 # [1] get ASU opr list
 with open(ASU_file) as asu_File:
@@ -125,9 +135,9 @@ with open(ASU_file) as asu_File:
         if not asu_opr_list.get(asu_opr):
             #print("adding opr to list: ",asu_opr)
             asu_opr_list[asu_opr] = 1
-    #print("No.  of ASU opr:",len(asu_opr_list), " list: ",asu_opr_list)
 
 # [2] method tocheck asu usage if_opr_using_ASU
+print("READ: No.  of ASU opr:",len(asu_opr_list))
 
 # [3] Main algo - parse each SHM raw stat
 with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
