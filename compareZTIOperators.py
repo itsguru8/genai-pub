@@ -12,7 +12,7 @@ from datetime import datetime
 ## 1. SHM-only-usage-analysis#1
 ## 2. SHM-only-usage-analysis#2
 if (len(sys.argv) < 4) :
-    print("INPUTS: SHM-only-usage-analysis#1 SHM-only-usage-analysis#2 Analysis_title")
+    print("INPUTS: ZTI-usage-analysis#1 SHM-only-usage-analysis#2 Analysis_title")
     exit()
 
 print("INPUT: analysis#1: ",sys.argv[1])
@@ -27,17 +27,13 @@ print("INPUT: analysis#Title: ",sys.argv[3])
 opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operator-mapping.json"
 
 
-#SHMOpr_file = "SHM-Opr_Wk1-Wk33.txt"
-#ASU_file= "ASU_STATS_2024_WK1-WK33.csv"
-#ASU_file= "ASU_STATS_2022_WK1-WK52.csv"
+#AP_ZT_Usage_08_Oct_rawStats
 analysis_1_file = sys.argv[1]
 
-#SHM_raw_stats_file = "SHM_STATS_UPGRADE2024_WK1-WK33.csv"
-#SHM_raw_stats_file = "SHM_STATS_2022_WK1-WK52.csv"
+#AP_ZT_Usage_31_Dec_2023_rawStats
 analysis_2_file = sys.argv[2]
 
 analysis_title = sys.argv[3]
-
 
 now = datetime.now()
 datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
@@ -45,8 +41,8 @@ datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
 #Output
 #print out
 outcontent={}
-outFilePath="compare_SHM-Opr-not-using-ASU.json"
-Out_pdffile = "compare_SHM-only-Usage"
+outFilePath="compare_ZTI-Opr-not-using-ASU.json"
+Out_pdffile = "compare_ZTI-Usage"
 
   
 def save_image(pdffile): 
@@ -65,46 +61,93 @@ def save_image(pdffile):
 ## MAIN ##
 ####################################################################################################################
 
-# read-config obj
 analysis_1_stats = {}
 analysis_2_stats = {}
 
+#Row Labels,Count of nodeName
+#Airtel_Libreville_ltcenm01lms,11
+f1_ZTI_opr_node_count = {}
+with open(analysis_1_file, "r") as raw_1_stats:
+    lines = raw_1_stats.readlines()
+    #remove header
+    lines.pop(0)
 
-with open(analysis_1_file, 'r', encoding="utf-8") as json_1_file:
-    analysis_1_stats = json.load(json_1_file)
-print("READ: ", analysis_1_file)
+    for line in lines:
+        site = ''.join(line.split(',')[0]) # Airtel_Libreville_ltcenm01lms,
+        nodes = int(''.join(line.split(',')[1])) # Airtel_Libreville_ltcenm01lms,
+        l_opr = ''.join(line.split('_')[0]) # Airtel
 
-with open(analysis_2_file, 'r', encoding="utf-8") as json_2_file:
-    analysis_2_stats = json.load(json_2_file)
-print("READ: ", analysis_2_file)
+        if not f1_ZTI_opr_node_count.get(l_opr):
+            f1_ZTI_opr_node_count[l_opr] = 0 # create key 1st time
+            #print("Not using ASU: ma: ",l_ma,", opr:",shm_opr)
+        f1_ZTI_opr_node_count[l_opr] += nodes
+
+
+#Row Labels,Count of nodeName
+#Airtel_Libreville_ltcenm01lms,11
+f2_ZTI_opr_node_count = {}
+with open(analysis_2_file, "r") as raw_2_stats:
+    lines = raw_2_stats.readlines()
+    #remove header
+    lines.pop(0)
+
+    for line in lines:
+        site = ''.join(line.split(',')[0]) # Airtel_Libreville_ltcenm01lms,
+        nodes = int(''.join(line.split(',')[1])) # Airtel_Libreville_ltcenm01lms,
+        l_opr = ''.join(line.split('_')[0]) # Airtel
+
+        if not f2_ZTI_opr_node_count.get(l_opr):
+            f2_ZTI_opr_node_count[l_opr] = 0 # create key 1st time
+            #print("Not using ASU: ma: ",l_ma,", opr:",shm_opr)
+        f2_ZTI_opr_node_count[l_opr] += nodes
+
+# now compare f1 & f2 results
+"""
+{
+    "inputs": {
+        "file_1": ".\\SHM-Opr-not-using-ASU.json",
+        "file_2": ".\\2023\\SHM-Opr-not-using-ASU.json",
+        "time_of_processing": "07-10-2024_22-21-15"
+    },
+    "comparison": {
+        "stats": {
+            "Total_file_1-Opr": 159,
+            "Total_file_2-Opr": 141,
+            "No of common-Opr": 99,
+            "No of unique-Opr_file_1": 60
+        },
+        "unique_operators_in_file_1": {
+            "PT-ID" : x,
+            ...
+		},
+		"common_operators_in_file_1": {
+            "KoreaTelecom-KR" : y,
+            ...
+        },
+        "unique_operators_in_file_2": {
+            "ABC_opr" : z,
+            ...
+	    }
+	 }
+}
+"""
 
 unique_1_list = {}
 common_1_list = {}
 unique_2_list = {}
 
-for i in analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():
-    if  analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].get(i):
-        common_1_list[i] = analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][i]
+for i in f1_ZTI_opr_node_count.keys():
+    if  f2_ZTI_opr_node_count.get(i):
+        common_1_list[i] = f1_ZTI_opr_node_count[i]
     else:
-        unique_1_list[i] = analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][i]
+        unique_1_list[i] = f1_ZTI_opr_node_count[i]
 
-for j in analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():
+for j in f2_ZTI_opr_node_count.keys():
     if  not common_1_list.get(j):
-        unique_2_list[j] = analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][j]
+        unique_2_list[j] = f2_ZTI_opr_node_count[j]
 
-"""
-print("Total length of 1: ",len(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys()))
-print("Total length of 2: ",len(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys()))
 
-print("No. of unique in 1 ", len(unique_1_list)," values: ",unique_1_list)    
-print("No. of common in 1 ", len(common_1_list)," values: ",common_1_list)    
-"""
-
-##
-#write output
-##
-
-# dump this info
+#dump this info
 outcontent['inputs'] = {}
 outcontent['inputs']['file_1'] = analysis_1_file
 outcontent['inputs']['file_2'] = analysis_2_file
@@ -113,8 +156,8 @@ outcontent['inputs']['time_of_processing'] = datetime_str
 outcontent['comparison'] = {}
 
 outcontent['comparison']['stats'] = {}
-outcontent['comparison']['stats']['Total_file_1-Opr'] = len(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
-outcontent['comparison']['stats']['Total_file_2-Opr'] = len(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
+outcontent['comparison']['stats']['Total_file_1-Opr'] = len(f1_ZTI_opr_node_count.keys())
+outcontent['comparison']['stats']['Total_file_2-Opr'] = len(f2_ZTI_opr_node_count.keys())
 outcontent['comparison']['stats']['No of common-Opr'] = len(common_1_list)
 outcontent['comparison']['stats']['No of unique-Opr_file_1'] = len(unique_1_list)
 
@@ -122,6 +165,10 @@ outcontent['comparison']['unique_operators_in_file_1'] = unique_1_list
 outcontent['comparison']['common_operators_in_file_1'] = common_1_list
 outcontent['comparison']['unique_operators_in_file_2'] = unique_2_list
 
+
+##
+#write output
+##
 
 with open(outFilePath, "w+") as outfile:
     json.dump(outcontent, outfile)
