@@ -41,7 +41,7 @@ datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
 #Output
 #print out
 outcontent={}
-outFilePath="compare_ZTI-Opr-not-using-ASU.json"
+outFilePath="compare_ZTI-Opr.json"
 Out_pdffile = "compare_ZTI-Usage"
 
   
@@ -160,6 +160,7 @@ outcontent['comparison']['stats']['Total_file_1-Opr'] = len(f1_ZTI_opr_node_coun
 outcontent['comparison']['stats']['Total_file_2-Opr'] = len(f2_ZTI_opr_node_count.keys())
 outcontent['comparison']['stats']['No of common-Opr'] = len(common_1_list)
 outcontent['comparison']['stats']['No of unique-Opr_file_1'] = len(unique_1_list)
+outcontent['comparison']['stats']['No of unique-Opr_file_2'] = len(unique_2_list)
 
 outcontent['comparison']['unique_operators_in_file_1'] = unique_1_list
 outcontent['comparison']['common_operators_in_file_1'] = common_1_list
