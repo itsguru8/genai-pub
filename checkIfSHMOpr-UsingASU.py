@@ -7,12 +7,13 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 import numpy as np
 from datetime import datetime
+import pandas
 
 ## Input:
 ## 1.  ASU usage file txt
 ## 2. SHM usage file 
 if (len(sys.argv) == 1) :
-    print("USAGE: <asu_raw_stats_file> <shm_raw_stats_file>")
+    print("INPUTS: <asu_raw_stats_file> <shm_raw_stats_file>")
     exit()
 
 print("INPUT: asu_raw_stats_file: ",sys.argv[1])
@@ -26,14 +27,13 @@ print("INPUT: shm_raw_stats_file: ",sys.argv[2])
 opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operator-mapping.json"
 
 
-#SHMOpr_file = "SHM-Opr_Wk1-Wk33.txt"
-#ASU_file= "ASU_STATS_2024_WK1-WK33.csv"
 #ASU_file= "ASU_STATS_2022_WK1-WK52.csv"
 ASU_file = sys.argv[1]
+file1_name = ''.join(ASU_file.split('.')[0]).lower()
 
-#SHM_raw_stats_file = "SHM_STATS_UPGRADE2024_WK1-WK33.csv"
 #SHM_raw_stats_file = "SHM_STATS_2022_WK1-WK52.csv"
 SHM_raw_stats_file = sys.argv[2]
+file2_name = ''.join(SHM_raw_stats_file.split('.')[0]).lower()
 
 
 """ SAME for both asu & shm raw stats 
@@ -126,20 +126,36 @@ with open(opr_mapping_file_path, 'r', encoding="utf-8") as json_file:
 print("READ: config file: ", opr_mapping_file_path)
 
 # [1] get ASU opr list
+#Site,Deployment Type,Market Area,ENM Version,Operator,Flow Execution Name,Phases,Start Time,End Time,Duration,Node Count
+
+"""
+#read from excel
+excel_data_df = pandas.read_excel(ASU_file, sheet_name=ASU_file)
+
+print('Excel Sheet to CSV:\n', excel_data_df.to_csv(index=False))
+
+#end -read from excel
+"""
+
 with open(ASU_file) as asu_File:
     asu_lines = asu_File.readlines()
     #remove header
     asu_lines.pop(0)
     for line in asu_lines:
         asu_opr = ''.join(line.split(',')[4]).lower()
-        if not asu_opr_list.get(asu_opr):
-            #print("adding opr to list: ",asu_opr)
-            asu_opr_list[asu_opr] = 1
+        if asu_opr :
+          if not asu_opr_list.get(asu_opr):
+              #print("adding opr to list: ",asu_opr)
+              asu_opr_list[asu_opr] = 0
+          asu_node_count = int(''.join(line.split(',')[10]).lower())
+          asu_opr_list[asu_opr] += asu_node_count
 
 # [2] method tocheck asu usage if_opr_using_ASU
 print("READ: No.  of ASU opr:",len(asu_opr_list))
 
 # [3] Main algo - parse each SHM raw stat
+#Site,Deployment Type,Market Area,ENM Version,Operator,JobType,NodeCount,JobName,StartTime,EndTime,Duration,Status,Progress,Result,WKNO
+
 with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
     lines = SHM_raw_stats.readlines()
     #remove header
@@ -156,12 +172,14 @@ with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
         l_cnt = int(''.join(line.split(',')[6])) # node count
 
         if if_opr_using_ASU(shm_opr) :
+            """
             if not shm_opr_using_asu.get(shm_opr):
                 shm_opr_using_asu[shm_opr] = 1 # first time, create key
                 shm_opr_using_asu_count += 1
                 #shm_opr_using_asu[shm_opr] += l_cnt
                 #total_shm_opr_using_asu_count += l_cnt
-                #print(shm_opr," is using ASU!")
+                print(shm_opr," is using ASU!")
+            """
             continue  # good, continue using ! nothing to do
         else:  # get stats            
             if not shm_opr_NOT_using_asu.get(shm_opr):
@@ -240,13 +258,15 @@ outcontent['inputs'] = {}
 outcontent['inputs']['asu_raw_stats_file'] = ASU_file
 outcontent['inputs']['shm_raw_stats_file'] = SHM_raw_stats_file
 outcontent['inputs']['time_of_processing'] = datetime_str
+outcontent['asu'] = {}
+outcontent['asu']['no. of ASU operators'] = len(asu_opr_list)
+outcontent['asu']['asu_operators'] = asu_opr_list
 
 outcontent['SHM_only_Usage_analysis'] = shm_only_all_stats
 
 
-#SHM with ASU - THIS SHOULD BE AT JOB LEVEL, THAN OPERATOR LEVEL !
-outcontent['SHM_opr_Using_ASU'] = {}
-outcontent['SHM_opr_Using_ASU']['shm_opr_using_asu_count'] =  shm_opr_using_asu_count
+#outcontent['SHM_opr_Using_ASU'] = {}
+#outcontent['SHM_opr_Using_ASU']['shm_opr_using_asu_count'] =  shm_opr_using_asu_count
 
 with open(outFilePath, "w+") as outfile:
     json.dump(outcontent, outfile)
