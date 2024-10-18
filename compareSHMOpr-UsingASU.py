@@ -4,6 +4,7 @@ import re
 import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages 
+#import Image
 
 import numpy as np
 from datetime import datetime
@@ -27,13 +28,13 @@ print("INPUT: analysis#Title: ",sys.argv[3])
 opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operator-mapping.json"
 
 
-# asu+shm analysis/2024 : SHM-Opr-not-using-ASU.json
+# asu+shm analysis/2024 : 
 analysis_1_file = sys.argv[1]
-file1_name = ''.join(analysis_1_file.split('.')[0]).lower()
+file1_name = ''.join(analysis_1_file.split('.')[0])
 
-# asu+shm analysis/2023 : SHM-Opr-not-using-ASU.json
+# asu+shm analysis/2023 : 
 analysis_2_file = sys.argv[2]
-file2_name = ''.join(analysis_2_file.split('.')[0]).lower()
+file2_name = ''.join(analysis_2_file.split('.')[0])
 
 analysis_title = sys.argv[3]
 
@@ -44,9 +45,8 @@ datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
 #Output
 #print out
 outcontent={}
-outFilePath="compare_SHM-Opr-not-using-ASU.json"
-Out_pdffile = "compare_SHM-only-Usage"
-
+outFilePath=sys.argv[3]+".json"
+Out_pdffile = sys.argv[3]
   
 def save_image(pdffile): 
     p = PdfPages(pdffile)       
@@ -85,14 +85,15 @@ def save_image(pdffile):
 Total_ASU_file_1_Opr = "Total_Opr_ASU_" + file1_name  #A-file1
 Total_ASU_file_2_Opr = "Total_Opr_ASU_" + file2_name  #A-file2
 #Comparison is w.r.t File1
+List_ASU_opr_continue = []    
 List_ASU_opr_migrated_in = []                           # <-- no. of SL2 in AL-1   = S2A 
-
-List_ASU_opr_migrated_out = []                          # <-- no. of AL2 in SL-1  = A2S
-
 #net new ASU (green-field)
 List_ASU_opr_green = []                                   # <-- not in A2 & not S2A 
 
-# A2 not in A1
+List_ASU_opr_migrated_out = []                          # <-- no. of AL2 in SL-1  = A2S
+
+
+# A2 not in A1 , yet to use
 List_ASU_opr_yellow = []
 
 #shm-perspective
@@ -116,52 +117,42 @@ print("READ: ", analysis_2_file)
 
 #analysis w.r.t file1
 
+#++++++++++++++++++++++++++
+#continue A2-> A1
+for i in analysis_2_stats["asu"]["asu_operators"].keys():
+    if  analysis_1_stats["asu"]["asu_operators"].get(i):
+        List_ASU_opr_continue.append(i)
+
+
 #List_ASU_opr_migrated_in = []                           # <-- no. of SL2 in AL-1   = S2A 
 
 for i in analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():
-    if  analysis_1_stats["asu"]["asu_operators"].get(i.lower()):
-        print("[++]Opr: ",i," moved from SHM to ASU")
+    if  analysis_1_stats["asu"]["asu_operators"].get(i):
+        #print("[++]Opr: ",i," moved from SHM to ASU")
         List_ASU_opr_migrated_in.append(i)
-
-#DO: case insenstivie check
-#List_ASU_opr_migrated_out = []                          # <-- no. of AL2 in SL-1  = A2S
-for i in analysis_2_stats["asu"]["asu_operators"].keys():
-    if  analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].get(i):
-        print("[--]Opr: ",i," moved out of ASU to SHM")
-        List_ASU_opr_migrated_out.append(i)
-
+    
 #net new ASU (green-field)
 for i in analysis_1_stats["asu"]["asu_operators"].keys():
-    if  not analysis_2_stats["asu"]["asu_operators"].get(i) :   # if already using ASU
-        if not i.lower() in List_ASU_opr_migrated_in :   # newly migrated from SHM to ASU
+    if not i in List_ASU_opr_continue :
+        if not i in List_ASU_opr_migrated_in :   # newly migrated from SHM to ASU
             #print("[++]Opr: ",i," newly added to ASU usage")
             List_ASU_opr_green.append(i)
 
-#A2 not in A1
+#++++++++++++++++++++++++++
+
+#--------------------------
+#List_ASU_opr_migrated_out = []                          # <-- no. of AL2 in SL-1  = A2S
+#if username.upper() in (name.upper() for name in USERNAMES):
+
 for i in analysis_2_stats["asu"]["asu_operators"].keys():
-    if not analysis_1_stats["asu"]["asu_operators"].get(i):
-        print("[--]Opr: ",i," Yet to use ASU ")
-        List_ASU_opr_yellow.append(i)
+    if not i in analysis_1_stats["asu"]["asu_operators"].keys():
+        if i in analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():  # migrated out
+            List_ASU_opr_migrated_out.append(i)
+        else : # yet to use
+            List_ASU_opr_yellow.append(i)
 
+#--------------------------
 
-
-"""
-for i in analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():
-    if  analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].get(i):
-        common_1_list[i] = analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][i]
-    else:
-        unique_1_list[i] = analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][i]
-
-for j in analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys():
-    if  not common_1_list.get(j):
-        unique_2_list[j] = analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][j]
-
-print("Total length of 1: ",len(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys()))
-print("Total length of 2: ",len(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys()))
-
-print("No. of unique in 1 ", len(unique_1_list)," values: ",unique_1_list)    
-print("No. of common in 1 ", len(common_1_list)," values: ",common_1_list)    
-"""
 
 ##
 #write output
@@ -176,25 +167,41 @@ outcontent['inputs']['time_of_processing'] = datetime_str
 outcontent['comparison'] = {}
 
 outcontent['comparison']['stats'] = {}
-outcontent['comparison']['stats'][Total_SHM_file_1_Opr] = len(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
-outcontent['comparison']['stats'][Total_SHM_file_2_Opr] = len(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
+#outcontent['comparison']['stats'][Total_SHM_file_1_Opr] = len(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
+#outcontent['comparison']['stats'][Total_SHM_file_2_Opr] = len(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
 outcontent['comparison']['stats'][Total_ASU_file_1_Opr] = len(analysis_1_stats["asu"]["asu_operators"].keys())
 outcontent['comparison']['stats'][Total_ASU_file_2_Opr] = len(analysis_2_stats["asu"]["asu_operators"].keys())
 
-outcontent['comparison']['stats']['asu_count_diff'] = len(analysis_1_stats["asu"]["asu_operators"].keys()) - len(analysis_2_stats["asu"]["asu_operators"].keys())
 
-outcontent['comparison']['stats']['asu_migrated_IN'] = len(List_ASU_opr_migrated_in)
-outcontent['comparison']['stats']['asu_migrated_OUT'] = len(List_ASU_opr_migrated_out)
-outcontent['comparison']['stats']['asu_net_new'] = len(List_ASU_opr_green)
-outcontent['comparison']['stats']['asu_yet_to_use'] = len(List_ASU_opr_yellow)
+outcontent['comparison']['stats']['asu_continue'] = len(List_ASU_opr_continue)
+outcontent['comparison']['stats']['asu_migrated_IN++'] = len(List_ASU_opr_migrated_in)
+outcontent['comparison']['stats']['asu_new++'] = len(List_ASU_opr_green)
+
+#asu drop out
+#discounting opr addition-count, IDEALLY everyone should continue ASU  , and nobody should drop !
+outcontent['comparison']['stats']['asu_drop--'] = len(List_ASU_opr_continue) - len(analysis_2_stats["asu"]["asu_operators"].keys())
+
+if outcontent['comparison']['stats']['asu_drop--'] < 0 :
+    if len(List_ASU_opr_migrated_out) > 0 :
+      outcontent['comparison']['stats']['asu_migrated_to_SHM--'] = -(len(List_ASU_opr_migrated_out))
+    if len(List_ASU_opr_yellow) > 0 :
+      outcontent['comparison']['stats']['asu_yet_to_use--'] = -(len(List_ASU_opr_yellow))
 
 outcontent['comparison']['opr_list'] = {}
+outcontent['comparison']['opr_list']['asu_continue'] = List_ASU_opr_continue
 outcontent['comparison']['opr_list']['asu_migrated_IN'] = List_ASU_opr_migrated_in
-outcontent['comparison']['opr_list']['asu_migrated_OUT'] = List_ASU_opr_migrated_out
-outcontent['comparison']['opr_list']['asu_net_new'] = List_ASU_opr_green
+outcontent['comparison']['opr_list']['asu_new'] = List_ASU_opr_green
+outcontent['comparison']['opr_list']['asu_migrated_to_SHM'] = List_ASU_opr_migrated_out
 outcontent['comparison']['opr_list']['asu_yet_to_use'] = List_ASU_opr_yellow
 
+outcontent['input_opr_list'] = {}
+outcontent['input_opr_list'][Total_ASU_file_1_Opr] = list(analysis_1_stats["asu"]["asu_operators"].keys())
+outcontent['input_opr_list'][Total_ASU_file_2_Opr] = list(analysis_2_stats["asu"]["asu_operators"].keys())
+outcontent['input_opr_list'][Total_SHM_file_1_Opr] = list(analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
+outcontent['input_opr_list'][Total_SHM_file_2_Opr] = list(analysis_2_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"].keys())
 
+
+#finally dump outcontent
 with open(outFilePath, "w+") as outfile:
     json.dump(outcontent, outfile)
     print("[READY]see Compare results file(s): ",outFilePath)
@@ -202,8 +209,13 @@ with open(outFilePath, "w+") as outfile:
 
 ##
 #PLOTS
+
+#im = Image.open('ASU-YoY-analysis.jpg')
+#fig = plt.figure()
+
+
 o_plot_names = np.array(list(outcontent['comparison']['stats'].keys()))
-o_plot_names = np.char.replace(o_plot_names,"-","\n")
+o_plot_names = np.char.replace(o_plot_names,"_","\n")
      
 o_plot_values = np.array(list(outcontent['comparison']['stats'].values()))
 plt.bar(o_plot_names, o_plot_values)

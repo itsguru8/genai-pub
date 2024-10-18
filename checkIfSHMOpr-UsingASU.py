@@ -12,8 +12,8 @@ import pandas
 ## Input:
 ## 1.  ASU usage file txt
 ## 2. SHM usage file 
-if (len(sys.argv) == 1) :
-    print("INPUTS: <asu_raw_stats_file> <shm_raw_stats_file>")
+if (len(sys.argv) < 4) :
+    print("INPUTS: <asu_raw_stats_file> <shm_raw_stats_file> <description> ")
     exit()
 
 print("INPUT: asu_raw_stats_file: ",sys.argv[1])
@@ -29,21 +29,9 @@ opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operato
 
 #ASU_file= "ASU_STATS_2022_WK1-WK52.csv"
 ASU_file = sys.argv[1]
-file1_name = ''.join(ASU_file.split('.')[0]).lower()
 
 #SHM_raw_stats_file = "SHM_STATS_2022_WK1-WK52.csv"
 SHM_raw_stats_file = sys.argv[2]
-file2_name = ''.join(SHM_raw_stats_file.split('.')[0]).lower()
-
-
-""" SAME for both asu & shm raw stats 
-CHECK:
-column 3: Market Area
-column 5: Operator
-column 6: job type (Upgrade)
-column 7: Node count
-
-"""
 
 
 #vars
@@ -63,12 +51,12 @@ datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
 #Output
 #print out
 outcontent={}
-outFilePath="SHM-Opr-not-using-ASU.json"
-Out_pdffile = "SHM-only-Usage"
+outFilePath = sys.argv[3] + ".json"
+Out_pdffile = sys.argv[3]+"_"+datetime_str+".pdf"
 
 # [2] method to know if a given SHM opr using ASU ?
 def if_opr_using_ASU(l_opr):
-    if asu_opr_list.get(l_opr.lower()):
+    if asu_opr_list.get(l_opr):
         return True
     else:
         return False
@@ -128,33 +116,48 @@ print("READ: config file: ", opr_mapping_file_path)
 # [1] get ASU opr list
 #Site,Deployment Type,Market Area,ENM Version,Operator,Flow Execution Name,Phases,Start Time,End Time,Duration,Node Count
 
-"""
+#
 #read from excel
-excel_data_df = pandas.read_excel(ASU_file, sheet_name=ASU_file)
-
-print('Excel Sheet to CSV:\n', excel_data_df.to_csv(index=False))
+if "xlsx" in ASU_file:
+    file1_out = ''.join(ASU_file.split('.')[0])
+    excel_data_df = pandas.read_excel(ASU_file, sheet_name=file1_out)
+    file1_out += ".csv"
+    excel_data_df.to_csv(file1_out, index=False,mode='w+')
+    #overwrite input ASU file name
+    ASU_file = file1_out
+    print("ASU raw stats file: ",ASU_file)
 
 #end -read from excel
-"""
 
 with open(ASU_file) as asu_File:
     asu_lines = asu_File.readlines()
     #remove header
     asu_lines.pop(0)
     for line in asu_lines:
-        asu_opr = ''.join(line.split(',')[4]).lower()
+        asu_opr = ''.join(line.split(',')[4])
         if asu_opr :
           if not asu_opr_list.get(asu_opr):
               #print("adding opr to list: ",asu_opr)
               asu_opr_list[asu_opr] = 0
-          asu_node_count = int(''.join(line.split(',')[10]).lower())
+          asu_node_count = int(''.join(line.split(',')[10]))
           asu_opr_list[asu_opr] += asu_node_count
 
 # [2] method tocheck asu usage if_opr_using_ASU
 print("READ: No.  of ASU opr:",len(asu_opr_list))
 
+
 # [3] Main algo - parse each SHM raw stat
 #Site,Deployment Type,Market Area,ENM Version,Operator,JobType,NodeCount,JobName,StartTime,EndTime,Duration,Status,Progress,Result,WKNO
+
+if "xlsx" in SHM_raw_stats_file:
+    file2_out = ''.join(SHM_raw_stats_file.split('.')[0])
+    excel_data_df2 = pandas.read_excel(SHM_raw_stats_file, sheet_name=file2_out)
+    file2_out += ".csv"
+    excel_data_df2.to_csv(file2_out, index=False,mode='w+')
+    #overwrite input SHM file name
+    SHM_raw_stats_file = file2_out
+    print("SHM raw stats file: ",SHM_raw_stats_file)
+
 
 with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
     lines = SHM_raw_stats.readlines()
@@ -164,7 +167,7 @@ with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
     for line in lines:
         shm_job_type = ''.join(line.split(',')[5])
 
-        if shm_job_type != "UPGRADE" :
+        if "UPGRADE" not in shm_job_type :
             continue
 
         shm_opr = ''.join(line.split(',')[4]) # "opr" name e.g. STC-SA, Zain-BH
@@ -247,8 +250,6 @@ plt.xlabel("MA")
 plt.ylabel("Nodes in Upgrade")
 plt.figure()
 
-#finally write everything to pdf file
-Out_pdffile += datetime_str+".pdf"
 
 save_image(Out_pdffile)
 print("[READY]see plots file(s): ",Out_pdffile)
