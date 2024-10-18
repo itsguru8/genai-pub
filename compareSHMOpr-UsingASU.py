@@ -13,13 +13,19 @@ from datetime import datetime
 ## 1. SHM-only-usage-analysis#1
 ## 2. SHM-only-usage-analysis#2
 if (len(sys.argv) < 4) :
-    print("INPUTS: SHM-only-usage-analysis#1 SHM-only-usage-analysis#2 Analysis_title")
+    print("INPUTS: ASU_SHM-usage-analysis#1 ASU_SHM-usage-analysis#2 Analysis_title")
     exit()
 
 print("INPUT: analysis#1: ",sys.argv[1])
 print("INPUT: analysis#2: ",sys.argv[2])
 print("INPUT: analysis#Title: ",sys.argv[3])
 
+## check before running
+
+#1. input file names should have only one '.' , no more dots expected
+#2. pass the recent file first (e.g. 2024 )against which (e.g 2023) the compare is needed. 
+#3. the 3rd input param is used as title for Plots
+#4. TODO: try include the figure in pdf
 
 ## Operator config file:
 ## ma-operator mapping file

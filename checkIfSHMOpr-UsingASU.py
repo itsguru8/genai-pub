@@ -108,6 +108,17 @@ def save_image(pdffile):
     p.close()   
 
 ## MAIN ##
+
+
+## check before running
+
+#1. input file names should have only one '.' , no more dots expected
+# 2. the xlsx sheet name & file name should match
+#3. the xlsx files should be closed when running the script
+#4. if script still fails due to unknown operator, update the MA config mapping file under appropriate MA
+#5. the input files should not have "," within the file content. else parse fails. e.g: "Preparation, Activation" under "Phases" column
+
+
 # read-config obj 
 with open(opr_mapping_file_path, 'r', encoding="utf-8") as json_file:
     shm_only_all_stats = json.load(json_file)
