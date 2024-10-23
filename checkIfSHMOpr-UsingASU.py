@@ -114,11 +114,9 @@ def save_image(pdffile):
 
 ## check before running
 
-#[XXXX]1. input file names should have only one '.' , no more dots expected
-# 2. the xlsx sheet name & input file name should match
-#3. the xlsx files should be closed when running the script
-#[XXXX]4. if script still fails due to unknown operator, update the MA config mapping file under appropriate MA
-#5. the input files should not have "," within the file content. else parse fails. e.g: "Preparation, Activation" under "Phases" column
+#1. the xlsx sheet name & input file name should match
+#2. the xlsx files should be closed when running the script
+#3. the input files should not have "," within the file content. else parse fails. e.g: "Preparation, Activation" under "Phases" column
 
 
 # read-config obj 
