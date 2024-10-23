@@ -43,6 +43,8 @@ shm_opr_using_asu_count = 0
 total_shm_opr_using_asu_count = 0
 shm_opr_NOT_using_asu = {} 
 shm_opr_NOT_using_asu['shm_opr_NOT_using_asu_count'] = 0
+
+#across MA, top operators
 shm_opr_NOT_using_asu_nodes_count = {}
 
 now = datetime.now()
@@ -112,10 +114,10 @@ def save_image(pdffile):
 
 ## check before running
 
-#1. input file names should have only one '.' , no more dots expected
-# 2. the xlsx sheet name & file name should match
+#[XXXX]1. input file names should have only one '.' , no more dots expected
+# 2. the xlsx sheet name & input file name should match
 #3. the xlsx files should be closed when running the script
-#4. if script still fails due to unknown operator, update the MA config mapping file under appropriate MA
+#[XXXX]4. if script still fails due to unknown operator, update the MA config mapping file under appropriate MA
 #5. the input files should not have "," within the file content. else parse fails. e.g: "Preparation, Activation" under "Phases" column
 
 
@@ -130,23 +132,32 @@ print("READ: config file: ", opr_mapping_file_path)
 #
 #read from excel
 if "xlsx" in ASU_file:
-    file1_out = ''.join(ASU_file.split('.')[0])
+    file1_out = os.path.basename(ASU_file)
+    file1_out = ''.join(file1_out.split('.')[0]) # sheetname: get file name without extesion
     excel_data_df = pandas.read_excel(ASU_file, sheet_name=file1_out)
-    file1_out += ".csv"
+    file1_out += "_.csv"
     excel_data_df.to_csv(file1_out, index=False,mode='w+')
-    #overwrite input ASU file name
+    #post-sheet extraction, use it as input ASU file  
     ASU_file = file1_out
-    print("ASU raw stats file: ",ASU_file)
+else :
+    if not "csv" in ASU_file:
+        print("ERR: input ASU file is not valid raw stats file of ext: xlsm/csv  ")
+        exit()
 
+print("ASU raw stats file: ",ASU_file)
 #end -read from excel
 
+#test
+#exit()
+
+# now parse ASU csv
 with open(ASU_file) as asu_File:
     asu_lines = asu_File.readlines()
     #remove header
     asu_lines.pop(0)
     for line in asu_lines:
         asu_opr = ''.join(line.split(',')[4])
-        if asu_opr :
+        if asu_opr :   # null check
           if not asu_opr_list.get(asu_opr):
               #print("adding opr to list: ",asu_opr)
               asu_opr_list[asu_opr] = 0
@@ -161,15 +172,22 @@ print("READ: No.  of ASU opr:",len(asu_opr_list))
 #Site,Deployment Type,Market Area,ENM Version,Operator,JobType,NodeCount,JobName,StartTime,EndTime,Duration,Status,Progress,Result,WKNO
 
 if "xlsx" in SHM_raw_stats_file:
-    file2_out = ''.join(SHM_raw_stats_file.split('.')[0])
+    file2_out = os.path.basename(SHM_raw_stats_file)
+    file2_out = ''.join(file2_out.split('.')[0]) # get file name without extesion
     excel_data_df2 = pandas.read_excel(SHM_raw_stats_file, sheet_name=file2_out)
-    file2_out += ".csv"
+    file2_out += "_.csv"
     excel_data_df2.to_csv(file2_out, index=False,mode='w+')
     #overwrite input SHM file name
     SHM_raw_stats_file = file2_out
     print("SHM raw stats file: ",SHM_raw_stats_file)
+else :
+    if not "csv" in SHM_raw_stats_file:
+        print("ERR: input SHM file is not valid raw stats file of ext: xlsm/csv  ")
+        exit()
 
+print("SHM raw stats file: ",SHM_raw_stats_file)
 
+# now parse SHM csv
 with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
     lines = SHM_raw_stats.readlines()
     #remove header
@@ -194,25 +212,30 @@ with open(SHM_raw_stats_file, "r") as SHM_raw_stats:
                 #total_shm_opr_using_asu_count += l_cnt
                 print(shm_opr," is using ASU!")
             """
-            continue  # good, continue using ! nothing to do
+            continue  # good, seems SHM opr also using ASU ! nothing to do
         else:  # get stats            
             if not shm_opr_NOT_using_asu.get(shm_opr):
                 shm_opr_NOT_using_asu[shm_opr] = 1  #set some value , so that prev line is false next time & we avoid double count of #opr
                 shm_opr_NOT_using_asu['shm_opr_NOT_using_asu_count'] += 1
                 #print("Not using ASU: ma: ",l_ma,", opr:",shm_opr)
-                shm_opr_NOT_using_asu_nodes_count[shm_opr] = 0 #create key
+                shm_opr_NOT_using_asu_nodes_count[shm_opr] = 0 #create key for node count
 
+            # stat by Operator
+            shm_opr_NOT_using_asu_nodes_count[shm_opr] += l_cnt
             shm_only_all_stats['all_nodes_count'] += l_cnt
 
             # stat by MA
             if shm_only_all_stats.get(l_ma):
                 shm_only_all_stats[l_ma]['nodes_count'] += l_cnt
+
+                if not shm_only_all_stats[l_ma].get(shm_opr):
+                    shm_only_all_stats[l_ma][shm_opr] = 0
+
                 shm_only_all_stats[l_ma][shm_opr] += l_cnt
             else:
                 print("ma: ",l_ma,", MA not found!")
+                exit()
 
-            # stat by Operator
-            shm_opr_NOT_using_asu_nodes_count[shm_opr] += l_cnt
 
 # [4] get-stats
 shm_only_all_stats["total_operator_Count"] = shm_opr_NOT_using_asu['shm_opr_NOT_using_asu_count']

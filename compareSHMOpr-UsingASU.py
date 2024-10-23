@@ -36,14 +36,15 @@ opr_mapping_file_path = "c:/Users/xgurpat/OneDrive - Ericsson/SHMonly/MA-operato
 
 # asu+shm analysis/2024 : 
 analysis_1_file = sys.argv[1]
-file1_name = ''.join(analysis_1_file.split('.')[0])
+file1_base = os.path.basename(analysis_1_file)
+file1_name = ''.join(file1_base.split('.')[0])
 
 # asu+shm analysis/2023 : 
 analysis_2_file = sys.argv[2]
-file2_name = ''.join(analysis_2_file.split('.')[0])
+file2_base = os.path.basename(analysis_2_file)
+file2_name = ''.join(file2_base.split('.')[0])
 
 analysis_title = sys.argv[3]
-
 
 now = datetime.now()
 datetime_str = now.strftime("%d-%m-%Y_%H-%M-%S")
@@ -88,8 +89,8 @@ def save_image(pdffile):
 }
 """
 #asu-perspective 
-Total_ASU_file_1_Opr = "Total_Opr_ASU_" + file1_name  #A-file1
-Total_ASU_file_2_Opr = "Total_Opr_ASU_" + file2_name  #A-file2
+Total_ASU_file_1_Opr = "ASU_" + file1_name  #A-file1
+Total_ASU_file_2_Opr = "ASU_" + file2_name  #A-file2
 #Comparison is w.r.t File1
 List_ASU_opr_continue = []    
 List_ASU_opr_migrated_in = []                           # <-- no. of SL2 in AL-1   = S2A 
@@ -103,10 +104,8 @@ List_ASU_opr_migrated_out = []                          # <-- no. of AL2 in SL-1
 List_ASU_opr_yellow = []
 
 #shm-perspective
-Total_SHM_file_1_Opr = "Total_Opr_SHM_Only_" + file1_name
-Total_SHM_file_2_Opr = "Total_Opr_SHM_Only_" + file2_name
-
-
+Total_SHM_file_1_Opr = "SHM-Only_" + file1_name
+Total_SHM_file_2_Opr = "SHM-Only_" + file2_name
 
 # read-config obj
 analysis_1_stats = {}
@@ -179,19 +178,19 @@ outcontent['comparison']['stats'][Total_ASU_file_1_Opr] = len(analysis_1_stats["
 outcontent['comparison']['stats'][Total_ASU_file_2_Opr] = len(analysis_2_stats["asu"]["asu_operators"].keys())
 
 
-outcontent['comparison']['stats']['asu_continue'] = len(List_ASU_opr_continue)
-outcontent['comparison']['stats']['asu_migrated_IN++'] = len(List_ASU_opr_migrated_in)
-outcontent['comparison']['stats']['asu_new++'] = len(List_ASU_opr_green)
+outcontent['comparison']['stats']['continue'] = len(List_ASU_opr_continue)
+outcontent['comparison']['stats']['migrated_IN++'] = len(List_ASU_opr_migrated_in)
+outcontent['comparison']['stats']['new++'] = len(List_ASU_opr_green)
 
 #asu drop out
 #discounting opr addition-count, IDEALLY everyone should continue ASU  , and nobody should drop !
-outcontent['comparison']['stats']['asu_drop--'] = len(List_ASU_opr_continue) - len(analysis_2_stats["asu"]["asu_operators"].keys())
+outcontent['comparison']['stats']['drop--'] = len(List_ASU_opr_continue) - len(analysis_2_stats["asu"]["asu_operators"].keys())
 
-if outcontent['comparison']['stats']['asu_drop--'] < 0 :
+if outcontent['comparison']['stats']['drop--'] < 0 :
     if len(List_ASU_opr_migrated_out) > 0 :
-      outcontent['comparison']['stats']['asu_migrated_to_SHM--'] = -(len(List_ASU_opr_migrated_out))
+      outcontent['comparison']['stats']['to_SHM--'] = -(len(List_ASU_opr_migrated_out))
     if len(List_ASU_opr_yellow) > 0 :
-      outcontent['comparison']['stats']['asu_yet_to_use--'] = -(len(List_ASU_opr_yellow))
+      outcontent['comparison']['stats']['yet_to_use--'] = -(len(List_ASU_opr_yellow))
 
 outcontent['comparison']['opr_list'] = {}
 outcontent['comparison']['opr_list']['asu_continue'] = List_ASU_opr_continue
@@ -225,13 +224,15 @@ o_plot_names = np.char.replace(o_plot_names,"_","\n")
      
 o_plot_values = np.array(list(outcontent['comparison']['stats'].values()))
 plt.bar(o_plot_names, o_plot_values)
+plt.xticks(fontsize=6)
+
 for i in range(len(o_plot_names)):
-    plt.text(i, o_plot_values[i], o_plot_values[i], ha = 'center', fontsize = 6)
+    plt.text(i, o_plot_values[i], o_plot_values[i], ha = 'center', fontsize = 8)
 
 #plt.title("Node Upgrade: SHM_Only_Operator 2024_Wk1-Wk33 vs 2023")
 plt.title(analysis_title)
 plt.xlabel("stats")
-plt.ylabel("values")
+plt.ylabel("ASU Opr count")
 plt.figure()
 
 #finally write everything to pdf file
