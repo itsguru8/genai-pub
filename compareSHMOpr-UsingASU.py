@@ -4,7 +4,8 @@ import re
 import json
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages 
-#import Image
+#import matplotlib.image as Image
+from PIL import Image
 
 import numpy as np
 from datetime import datetime
@@ -74,6 +75,19 @@ def save_image(pdffile):
 ## MAIN ##
 ####################################################################################################################
 
+analysis_1_stats = {}
+analysis_2_stats = {}
+
+
+with open(analysis_1_file, 'r', encoding="utf-8") as json_1_file:
+    analysis_1_stats = json.load(json_1_file)
+print("READ: ", analysis_1_file)
+
+with open(analysis_2_file, 'r', encoding="utf-8") as json_2_file:
+    analysis_2_stats = json.load(json_2_file)
+print("READ: ", analysis_2_file)
+
+
 # If NOT UT
 if conf_param['parse_input_files'] != 0 :
 
@@ -95,19 +109,6 @@ if conf_param['parse_input_files'] != 0 :
     #shm-perspective
     Total_SHM_file_1_Opr = "SHM-Only_" + file1_name
     Total_SHM_file_2_Opr = "SHM-Only_" + file2_name
-
-    # read-config obj
-    analysis_1_stats = {}
-    analysis_2_stats = {}
-
-
-    with open(analysis_1_file, 'r', encoding="utf-8") as json_1_file:
-        analysis_1_stats = json.load(json_1_file)
-    print("READ: ", analysis_1_file)
-
-    with open(analysis_2_file, 'r', encoding="utf-8") as json_2_file:
-        analysis_2_stats = json.load(json_2_file)
-    print("READ: ", analysis_2_file)
 
     #analysis w.r.t file1
 
@@ -199,77 +200,71 @@ if conf_param['parse_input_files'] != 0 :
     with open(outFilePath, "w+") as outfile:
         json.dump(outcontent, outfile)
         print("[READY]see Compare results file(s): ",outFilePath)
-else :
+
+else :  # NOT UT case !!
     with open(outFilePath, 'r', encoding="utf-8") as json_out_file:
         outcontent = json.load(json_out_file)
     print("READ back: ", outFilePath)
-    #print(outcontent['comparison']['opr_list']['asu_migrated_to_SHM'])
+
 
 ##
 #PLOTS
 
-#im = Image.open('ASU-YoY-analysis.jpg')
-#fig = plt.figure()
 
-o_plot_names = np.array(list(outcontent['comparison']['stats'].keys()))
-o_plot_names = np.char.replace(o_plot_names,"_","\n")
-     
-o_plot_values = np.array(list(outcontent['comparison']['stats'].values()))
-plt.bar(o_plot_names, o_plot_values)
-plt.xticks(fontsize=6)
+if conf_param['plot_bkgnd'] != 0 : 
+    im = Image.open('ASU-YoY-analysis.jpg')
+    plt.figimage(im)
+    plt.figure()
 
-for i in range(len(o_plot_names)):
-    plt.text(i, o_plot_values[i], o_plot_values[i], ha = 'center', fontsize = 8)
+if conf_param['plot_stats'] != 0 : 
+  
+    o_plot_names = np.array(list(outcontent['comparison']['stats'].keys()))
+    o_plot_names = np.char.replace(o_plot_names,"_","\n")
+        
+    o_plot_values = np.array(list(outcontent['comparison']['stats'].values()))
+    plt.bar(o_plot_names, o_plot_values)
+    plt.xticks(fontsize=6)
 
-plt.title(analysis_title)
-plt.xlabel("stats")
-plt.ylabel("ASU Opr count")
-plt.figure()
+    for i in range(len(o_plot_names)):
+        plt.text(i, o_plot_values[i], o_plot_values[i], ha = 'center', fontsize = 8)
+
+    plt.title(analysis_title)
+    plt.xlabel("stats")
+    plt.ylabel("ASU Opr count")
+    plt.figure()
 
 
 ### 
+if conf_param['plot_support_data'] != 0 : 
 
-"""
-            nodes_in_ASU  nodes_in SHM
-opr 1 
-opr 2
+    opr_drop_info = {}
+    for i_opr in outcontent['comparison']['opr_list']['asu_migrated_to_SHM'] :
+        asu_count = analysis_2_stats["asu"]["asu_operators"][i_opr]
+        shm_count = analysis_1_stats["SHM_only_Usage_analysis"]["top_operators_across_MA"][i_opr]
+        opr_drop_info[i_opr] = [asu_count,shm_count] 
 
-data=[[1,2],
-      [9,1],
-      [6,5]]
-column_labels=["ASU", "SHM"]
-row_labels = 
-    opr 1 
-    opr 2
-"""
-opr_drop_info = {}
-#test
-count =1 
-for i_opr in outcontent['comparison']['opr_list']['asu_migrated_to_SHM'] :
-    asu_count = count * 1
-    shm_count = count * 2
-    opr_drop_info[i_opr] = [asu_count,shm_count] # ASU count
-    count += 1
+    sorted_drop_stats = dict(sorted(opr_drop_info.items(), key=lambda item:item[1], reverse=True))    
+    
+    fig, ax =plt.subplots(1,1)
+    plt.subplots_adjust(top=0.8)
+    column_labels=["nodes in ASU(2023)", "nodes in SHM-Only(2024)"]
 
-#print("drop Info keys: ",list(opr_drop_info.keys()))
-#print("drop Info values: ",list(opr_drop_info.values()))
-fig, ax =plt.subplots(1,1)
-column_labels=["nodes in ASU", "nodes in SHM"]
+    #creating a 2-dimensional dataframe out of the given data
+    #pd.set_option('display.max_rows', 50)
+    df=pd.DataFrame(list(sorted_drop_stats.values()),columns=column_labels)
+    print("sorted drop stats: ",sorted_drop_stats)
 
-#creating a 2-dimensional dataframe out of the given data
-df=pd.DataFrame(list(opr_drop_info.values()),columns=column_labels)
+    ax.axis('tight') #turns off the axis lines and labels
+    ax.axis('off') #changes x and y axis limits such that all data is shown
 
-ax.axis('tight') #turns off the axis lines and labels
-ax.axis('off') #changes x and y axis limits such that all data is shown
-
-#plotting data
-table = ax.table(cellText=df.values,
-        colLabels=df.columns,
-        rowLabels=list(opr_drop_info.keys()),
-        loc="center")
-#table.set_fontsize(4)
-#table.scale(1,2)
-#plt.show()
+    #plotting data
+    table = ax.table(cellText=df.values,
+            colLabels=df.columns,
+            rowLabels=list(sorted_drop_stats.keys()),
+            loc="center")
+    table.set_fontsize(6)
+    #table.auto_set_font_size()
+    table.auto_set_column_width(1)
 
 
 ##
